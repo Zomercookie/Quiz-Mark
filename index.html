@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quizbudget Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #111831;
+      --muted: #9fb0d0;
+      --text: #eaf1ff;
+      --accent: #5dd0ff;
+      --accent-2: #8b5cff;
+      --danger: #ff6b6b;
+      --ok: #30d158;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(141, 94, 255, .18), transparent 60%),
+                  radial-gradient(1200px 600px at 90% -10%, rgba(93, 208, 255, .18), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+    }
+    header { position: sticky; top: 0; z-index: 10; background: linear-gradient(180deg, rgba(11,16,32,0.95), rgba(11,16,32,0.7)); backdrop-filter: blur(6px); border-bottom: 1px solid rgba(255,255,255,.07); }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 16px 20px; }
+    .title-row { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    h1 { font-size: 22px; margin: 0; letter-spacing: 0.2px; }
+    .budget-box { display: grid; gap: 8px; min-width: 280px; background: linear-gradient(135deg, rgba(93,208,255,.12), rgba(139,92,255,.12)); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px 14px; box-shadow: var(--shadow); }
+    .budget-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 600; }
+    .progress { height: 10px; background: rgba(255,255,255,.08); border-radius: 10px; overflow: hidden; }
+    .progress > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); width: 0%; transition: width .25s ease; }
+    main { max-width: 1100px; margin: 24px auto 120px; padding: 0 20px; display: grid; gap: 22px; }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.09); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+    .card h2 { margin: 0 0 14px; font-size: 18px; font-weight: 700; letter-spacing: .2px; }
+    .section-title { font-size: 20px; font-weight: 700; margin: 24px 0 12px; color: #8b5cff; }
+    .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    .btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.03);
+      color: var(--text); cursor: pointer; font-weight: 600;
+      transition: transform .06s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+      text-align: left;
+    }
+    .btn img.player-img {
+      width: 56px; height: 56px;
+      border-radius: 50%; object-fit: cover;
+      border: 2px solid rgba(255,255,255,.15);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .btn:hover img.player-img {
+      transform: scale(1.08);
+      border-color: var(--accent);
+    }
+    .btn .text-wrap { display: flex; flex-direction: column; align-items: flex-start; }
+    .btn .name { opacity: .95; font-size: 15px; }
+    .btn .price { font-size: 13px; color: var(--muted); }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.18); box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+    .btn[aria-pressed="true"] {
+      background: linear-gradient(135deg, rgba(93,208,255,.18), rgba(139,92,255,.18));
+      border-color: rgba(139,92,255,.45);
+      box-shadow: 0 10px 26px rgba(139,92,255,.18);
+    }
+    .btn:disabled { cursor: not-allowed; opacity: .45; filter: grayscale(.2); }
+    .footerbar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      width: min(1100px, calc(100% - 40px));
+      background: linear-gradient(135deg, rgba(48,209,88,.12), rgba(93,208,255,.12));
+      border: 1px solid rgba(255,255,255,.12); border-radius: 16px;
+      padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; box-shadow: var(--shadow);
+    }
+    .footerbar .summary { font-weight: 700; letter-spacing: .2px; }
+    .footer-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .pill { padding: 10px 14px; border-radius: 999px; font-weight: 700; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); cursor: pointer; }
+    .pill:active { transform: translateY(1px); }
+    .small { font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap title-row">
+      <h1>Quizbudget Game</h1>
+      <div class="budget-box" aria-live="polite">
+        <div class="budget-line"><span>Totaal budget</span><span id="totalBudget">€35M</span></div>
+        <div class="budget-line"><span>Besteed</span><span id="spent">€0M</span></div>
+        <div class="budget-line"><span><strong>Over</strong></span><span id="remaining">€35M</span></div>
+        <div class="progress" aria-hidden="true"><div id="progressBar"></div></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="app" class="wrap"></main>
+
+  <div class="footerbar wrap" role="region" aria-label="Samenvatting">
+    <div class="summary">
+      Gekozen rondes: <span id="chosenCount">0</span>/10 — Over: <span id="remainingBottom">€35M</span>
+      <div class="small">Je kunt altijd wisselen binnen een ronde. Over budget gaan is niet toegestaan.</div>
+    </div>
+    <div class="footer-actions">
+      <button class="pill secondary" id="resetBtn" type="button">Reset alle keuzes</button>
+      <button class="pill" id="finishBtn" type="button" disabled>Afronden</button>
+    </div>
+  </div>
+
+  <script>
+    const PLAYERS = ["Lars","Pieter","Viktor","Ronald","Jurrit","Ivar","Mark"];
+
+    const PLAYER_IMAGES = {
+      Lars: "https://www.megagadgets.nl/media/catalog/product/cache/83bb1d49f7dfe8aaa26034f1f72f0da6/0/4/04703-xxl-beerglass-boot-1.jpg",
+      Pieter: "https://www.kiddowz.net/wp-content/uploads/2015/04/pieterpost.jpg",
+      Viktor: "https://beestjeskwijt.nl/storage/media/images/HBCOM/Ongedierte/Boktorren/boktor-en-larve.png",
+      Ronald: "https://miro.medium.com/1*i8WvU4LQ-tMe-EIVq1r_pw.png",
+      Jurrit: "https://m.media-amazon.com/images/I/816Etq5qEwL._AC_SY300_SX300_QL70_FMwebp_.jpg",
+      Ivar: "https://pbs.twimg.com/profile_images/999948611382280194/xbdOPBjL_400x400.jpg",
+      Mark: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMozJvk2b8Vkn21FdgdphpF_UWZL4muFn68A&s"
+    };
+
+    const ROUNDS = [
+      { title: "Quiz Lars", section: "Quizen van andere eikels", data: { Lars: null, Pieter: 4.0, Viktor: 2.0, Ronald: 3.5, Jurrit: 4.5, Ivar: 3.5, Mark: 3.5 } },
+      { title: "Quiz Pieter", section: "Quizen van andere eikels", data: { Lars: 4.0, Pieter: null, Viktor: 2.0, Ronald: 4.5, Jurrit: 4.5, Ivar: 3.0, Mark: 4.0 } },
+      { title: "Quiz Viktor", section: "Quizen van andere eikels", data: { Lars: 2.0, Pieter: 2.0, Viktor: null, Ronald: 4.5, Jurrit: 3.5, Ivar: 2.0, Mark: 3.0 } },
+      { title: "Quiz Ronald", section: "Quizen van andere eikels", data: { Lars: 4.0, Pieter: 3.0, Viktor: 3.0, Ronald: null, Jurrit: 4.5, Ivar: 2.0, Mark: 2.0 } },
+      { title: "Quiz Jurrit", section: "Quizen van andere eikels", data: { Lars: 4.0, Pieter: 3.0, Viktor: 3.0, Ronald: 3.0, Jurrit: null, Ivar: 2.0, Mark: 2.0 } },
+      { title: "Quiz Ivar", section: "Quizen van andere eikels", data: { Lars: 4.0, Pieter: 4.0, Viktor: 4.5, Ronald: 4.0, Jurrit: null, Ivar: null, Mark: 3.0 } },
+      { title: "Geschiedenis ronde", section: "Rondes Quiz Mark", data: { Lars: 3.0, Pieter: 2.0, Viktor: 4.0, Ronald: 2.0, Jurrit: 3.0, Ivar: 4.5, Mark: null } },
+      { title: "Voetbal ronde", section: "Rondes Quiz Mark", data: { Lars: 4.0, Pieter: 4.5, Viktor: 3.0, Ronald: 3.0, Jurrit: 2.0, Ivar: 3.5, Mark: null } },
+      { title: "Algemene kennis ronde", section: "Rondes Quiz Mark", data: { Lars: 2.0, Pieter: 2.0, Viktor: 4.5, Ronald: 3.0, Jurrit: 3.0, Ivar: 4.5, Mark: null } },
+      { title: "Muziek ronde", section: "Rondes Quiz Mark", data: { Lars: 3.5, Pieter: 3.5, Viktor: 4.5, Ronald: 3.5, Jurrit: 3.5, Ivar: 2.0, Mark: null } }
+    ];
+
+    const BUDGET = 35;
+    const selections = Array(ROUNDS.length).fill(null);
+
+    function formatM(n) { if (n == null || isNaN(n)) return "—"; const s = Number.isInteger(n) ? n.toString() : n.toFixed(1).replace(/\.0$/, ""); return `€${s}M`; }
+    function calcSpent(excludeRoundIndex = null) { return selections.reduce((sum, sel, i) => { if (sel && i !== excludeRoundIndex) sum += sel.cost; return sum; }, 0); }
+    function remainingBudget() { return BUDGET - calcSpent(); }
+    function canAfford(roundIndex, optionCost) { const spentExcl = calcSpent(roundIndex); return spentExcl + optionCost <= BUDGET + 1e-9; }
+
+    const app = document.getElementById('app');
+
+    function render() {
+      app.innerHTML = '';
+      let lastSection = '';
+      
+      ROUNDS.forEach((round, idx) => {
+        if (round.section !== lastSection) {
+          const sectionHeader = document.createElement('h2');
+          sectionHeader.textContent = round.section;
+          sectionHeader.className = 'section-title';
+          app.appendChild(sectionHeader);
+          lastSection = round.section;
+        }
+
+        const card = document.createElement('section');
+        card.className = 'card';
+        
+        const h2 = document.createElement('h2');
+        h2.textContent = round.title;
+        card.appendChild(h2);
+
+        const grid = document.createElement('div');
+        grid.className = 'options';
+
+        const playersWithCost = PLAYERS.map(name => ({ name, cost: round.data[name] }));
+        playersWithCost.sort((a,b) => {
+          const ca = (a.cost == null) ? -Infinity : a.cost;
+          const cb = (b.cost == null) ? -Infinity : b.cost;
+          return cb - ca;
+        });
+
+        playersWithCost.forEach(({ name, cost }) => {
+          const btn = document.createElement('button');
+          btn.className = 'btn';
+          btn.type = 'button';
+
+          const selected = selections[idx]?.name === name;
+          btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+
+          const img = document.createElement('img');
+          img.src = PLAYER_IMAGES[name] || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=64`;
+          img.alt = name;
+          img.className = 'player-img';
+          img.onerror = () => { img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=64`; };
+
+          const textWrap = document.createElement('div');
+          textWrap.className = 'text-wrap';
+
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'name';
+          nameSpan.textContent = name;
+
+          const priceSpan = document.createElement('span');
+          priceSpan.className = 'price';
+          priceSpan.textContent = formatM(cost);
+
+          textWrap.appendChild(nameSpan);
+          textWrap.appendChild(priceSpan);
+
+          btn.appendChild(img);
+          btn.appendChild(textWrap);
+
+          let disabled = (cost == null);
+          if (!disabled && !selected) disabled = !canAfford(idx, cost);
+          btn.disabled = disabled;
+
+          if (!btn.disabled) {
+            btn.addEventListener('click', () => {
+              selections[idx] = { name, cost };
+              updateHeader();
+              updateCard(card, idx);
+              updateFooter();
+            });
+          }
+
+          grid.appendChild(btn);
+        });
+
+        card.appendChild(grid);
+        app.appendChild(card);
+      });
+
+      updateHeader();
+      updateFooter();
+    }
+
+    function updateCard(cardEl, roundIndex) {
+      const round = ROUNDS[roundIndex].data;
+      const buttons = Array.from(cardEl.querySelectorAll('.btn'));
+      buttons.forEach((btn) => {
+        const name = btn.querySelector('.name').textContent;
+        const cost = round[name];
+        const selected = selections[roundIndex]?.name === name;
+        btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        if (cost == null) { btn.disabled = true; return; }
+        if (selected) { btn.disabled = false; return; }
+        btn.disabled = !canAfford(roundIndex, cost);
+      });
+    }
+
+    function updateHeader() {
+      const spent = calcSpent();
+      const remain = BUDGET - spent;
+      document.getElementById('totalBudget').textContent = formatM(BUDGET);
+      document.getElementById('spent').textContent = formatM(spent);
+      document.getElementById('remaining').textContent = formatM(remain);
+      document.getElementById('progressBar').style.width = `${(spent / BUDGET) * 100}%`;
+    }
+
+    function updateFooter() {
+      const chosen = selections.filter(Boolean).length;
+      const remain = remainingBudget();
+      document.getElementById('chosenCount').textContent = chosen.toString();
+      document.getElementById('remainingBottom').textContent = formatM(remain);
+      document.getElementById('finishBtn').disabled = chosen !== ROUNDS.length;
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', () => { selections.fill(null); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+    document.getElementById('finishBtn').addEventListener('click', () => {
+      alert('Alle keuzes gemaakt! Over budget: ' + formatM(remainingBudget()));
+    });
+
+    render();
+  </script>
+</body>
+</html>
